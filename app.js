@@ -1,4 +1,5 @@
 const express = require("express");
+const { connectToDB } = require("./db");
 const date = require(__dirname + "/date.js");
 const app = express();
 
@@ -8,6 +9,8 @@ const app = express();
 // Parse request body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+connectToDB();
 
 // set view engine for express
 app.set("view engine", "ejs");
