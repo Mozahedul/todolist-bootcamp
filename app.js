@@ -1,5 +1,6 @@
 const express = require("express");
 const { connectToDB } = require("./db");
+const { List } = require("./models/list");
 const date = require(__dirname + "/date.js");
 const app = express();
 
@@ -15,12 +16,16 @@ connectToDB();
 // set view engine for express
 app.set("view engine", "ejs");
 
-let items = ["food", "chocolate", "candy"];
 let workItems = [];
 
-app.get("/", function (req, res) {
-  const day = date.getDate();
-  res.render("list", { listTitle: day, newListItems: items });
+app.get("/", async function (req, res) {
+  try {
+    const day = date.getDate();
+    const items = await List.find({});
+    res.render("list", { listTitle: day, newListItems: items });
+  } catch (err) {
+    console.error("Error in getting todo list", err);
+  }
 });
 
 /**
@@ -28,15 +33,18 @@ app.get("/", function (req, res) {
  * @param {String} req
  * @return Object
  */
-app.post("/", function (req, res) {
-  console.log(req.body);
-  const item = req.body.listName;
-  if (req.body.list === "Work") {
-    workItems.push(item);
-    res.redirect("/work");
-  } else {
-    items.push(item);
+app.post("/", async function (req, res) {
+  try {
+    const listName = req.body.listName;
+    const listItems = new List({
+      name: listName,
+    });
+
+    const listSaved = await listItems.save();
+    console.log("Todo List Saved Successfully ==> ", listSaved);
     res.redirect("/");
+  } catch (err) {
+    console.error("Error in inserting document ==> ", err);
   }
 });
 
